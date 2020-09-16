@@ -1,7 +1,7 @@
 ---
 title: "Homework 0"
-author: "Write your name"
-date: "September 2020"
+author: "Victoria Espinola--bnq164"
+date: "15 September 2020"
 output: html_document
 ---
 
@@ -59,6 +59,7 @@ Try to not type out this data frame manually and instead try to do it algorithmi
 ```{r}
 month_map <- data.frame("month_name"=unique(cpi$month_name) , "month"=c(1: 12) )
 print(month_map)
+
 ```
 
 ### Q2
@@ -68,10 +69,9 @@ Merge `month_map` to the CPI data frame. Explicitly identify the common key vari
 Here are the first six rows of `cpi_merge`:
 
 ```{r}
-cpi_merge1 <- merge(month_map, cpi, by=c("month_name"))
-print(cpi_merge1)
-cpi_merge2 <- cpi_merge1[order(cpi_merge$year, cpi_merge1$month),]
-cpi_merge3 <- cpi_merge2[1:6, ]
+cpi_merge<- cpi%>%
+    left_join(month_map, by="month_name")
+head(cpi_merge)
 
 ```
 
@@ -82,9 +82,7 @@ We want to add a column to the `txhousing` data frame that holds the information
 Here are the top six rows of `housing`:
 
 ```{r}
-housing_1 <- merge(txhousing, cpi_merge2, by=c("year", "month"))
-housing_h <- housing_1[,c("city", "year", "month", "sales", "volume", "median", "listings", "inventory", "date", "cpi")]
-housing <- housing_h[order(housing_h$city, housing_h$year, housing$month), ]
+housing <- txhousing %>% left_join(cpi_merge, by=c("year", "month")) %>% select(-month_name)
 head(housing)
 ```
 
@@ -103,13 +101,9 @@ Modify `housing` by adding these new columns:
 Here I show the top six rows with only a select few columns to help you ensure your output resembles this:
 
 ```{r}
-housing$cpi_latest <- cpi_merge2[cpi_merge2$month==7 & cpi_merge2$year==2020,c("cpi")]
-
-housing$multiplier <- housing$cpi_latest/housing$cpi
-
-housing$volume_adj <- housing$volume * housing$multiplier
-
-housing$median_adj <- housing$median * housing$multiplier
+cpi_2020_07 <- cpi_merge %>% filter(cpi_merge$month==7 & cpi_merge$year == 2020)
+cpi_2020_07 <- cpi_2020_07$cpi
+housing<- housing %>% mutate(cpi_latest= cpi_2020_07, multiplier = cpi_latest/cpi, volume_adj = volume * multiplier, median_adj=median*multiplier)
 head(housing)
 
 ```
@@ -128,12 +122,23 @@ Merge `housing_sum1` into `housing` by `city` and save it as a new dataset `hous
 Here I show first six rows of `housing_1` and only a select columns:
 
 ```{r}
+housing_sum1 <- housing %>% 
+  group_by(city) %>% 
+  summarize(volume_adj_max=max(volume_adj), 
+            volume_adj_min=min(volume_adj), 
+            median_adj_max=max(median_adj),
+            median_adj_min=min(median_adj))
+
+housing_1 <- housing %>% left_join(housing_sum1, by = "city") 
+
+head(housing_1)
 
 ```
 Here I show *last* six rows of `housing_1` and only a select columns:
 
 ```{r}
 
+tail(housing_1)
 ```
 
 ### Q6
@@ -143,6 +148,11 @@ Here I show *last* six rows of `housing_1` and only a select columns:
 Here I show first six rows of `housing_min` and only a select columns:
 
 ```{r}
+housing_min <- housing_1 %>% 
+  filter(volume_adj==volume_adj_min)
+
+head(housing_min)
+
 
 
 ```
@@ -153,7 +163,9 @@ Here I show first six rows of `housing_min` and only a select columns:
 Here I show first six rows of `housing_max` and only a select columns:
 
 ```{r}
-
+housing_max <- housing_1 %>% 
+  filter(median_adj==median_adj_max)
+head(housing_max)
 ```
 
 ### Q7
@@ -168,8 +180,12 @@ Using `housing_1` from Q5, create a new data frame `housing_sum2` with this info
 Here I show first six rows of `housing_sum2` and all the columns:
 
 ```{r}
+housing_sum2 <- housing_1 %>% 
+  group_by(year, month) %>% 
+  summarize(listings_med = median(listings, na.rm=TRUE), 
+            sales_med= median(sales, na.rm=TRUE))
 
-
+head(housing_sum2)
 ```
 
 Merge `housing_sum2` into `housing_1` and save a new data frame `housing_2`.
@@ -177,7 +193,9 @@ Merge `housing_sum2` into `housing_1` and save a new data frame `housing_2`.
 Here I show first six rows of `housing_2` and some of the columns:
 
 ```{r}
-
+housing_2 <- housing_1 %>% 
+        left_join(housing_sum2, by= c("year","month"))
+head(housing_2)
 ```
 
 
@@ -194,7 +212,10 @@ Modify `housing_2` from Q7 to add these indicator variables (also called dummy v
 Here I show first six rows of `housing_2` and some of the columns:
 
 ```{r}
+housing_2<-housing_2 %>% 
+  mutate(listings_ind= if_else(listings<=listings_med, 0, 1, missing = NULL), sales_ind= if_else(sales<=sales_med, 0, 1, missing= NULL)) 
 
+head(housing_2)
 
 ```
 
@@ -206,6 +227,11 @@ Using `housing_2` from Q8, add a new variable `market_hotness` as follows:
 
 
 ```{r}
+housing_2 <- housing_2 %>% 
+  mutate(marktet_hotness= if_else(listings_ind==0&sales_ind==1, "High", 
+                                  if_else(listings_ind==1&sales_ind==1, "Average",
+                                  if_else(listings_ind==0&sales_ind==0, "Low",
+                                  "Very low" ))))
 
 
 ```
@@ -213,7 +239,7 @@ Using `housing_2` from Q8, add a new variable `market_hotness` as follows:
 Here I show first six rows of `housing_2` and some of the columns:
 
 ```{r}
-
+head(housing_2)
 ```
 
 ### Q10
@@ -222,9 +248,14 @@ Here I show first six rows of `housing_2` and some of the columns:
 Which city has the highest *average* `median_adj` sale price and what is that price?
 
 ```{r}
-
+highest <- housing_1 %>% 
+    group_by(city) %>% 
+    summarize(max_med_adj=mean(median_adj)) %>% 
+    arrange(desc(max_med_adj))
+head(highest)
 ```
 
+#The highest sales price is $252, 325 from Collin County. 
 
 
 <br>

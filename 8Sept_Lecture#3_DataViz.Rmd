@@ -1,0 +1,234 @@
+---
+title: "Tidy data"
+author: "Ashwin Malshe"
+date: "9/8/2020"
+output:
+  html_document:
+    theme: sandstone
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(printr) # This package prints help in the rmarkdown document after knitting
+```
+
+For this exercise we will use `mpg` dataset, which is bundled with `ggplot2`. You don't have to explicitly call `ggplot2` into this R session because we loaded it already using `tidyverse`.
+
+## `mpg` dataset
+
+First, let's understand what is inside this dataset. A `?` followed by the name of the object/function/package will lead to opening up the help menu on right.
+
+```{r}
+?mpg # OR help(mpg)
+```
+
+
+### Exercise 1: Explore
+
+In this exercise, we will explore the dataset. 
+
+`summary()` will output simple summary for all the variables in the dataset
+
+```{r}
+summary(mpg)
+```
+
+Let's look at the frequency of character variables using `table()` function
+
+```{r}
+table(mpg$manufacturer)
+```
+
+
+`table()` outputs a vector of frequencies. What if you wanted a dataframe instead? We will use `count()` function from `dplyr`
+
+```{r}
+count(mpg, manufacturer)
+
+```
+
+It will work on numeric variables as well.
+
+```{r}
+count(mpg, year)
+```
+
+
+#### Printing specific statistics
+
+Use these functions to calculate summary statistics for `hwy` variable.
+
+```{r eval = FALSE}
+mean()
+median()
+sd()
+min()
+max()
+```
+
+
+### Create a dataframe with the summary statistics of `hwy`
+
+*Here also introduce `pipe` operator ` %>% `*
+
+
+```{r}
+mpg_sum1 <- mpg %>% 
+  summarize(hwy_mean = mean(hwy),
+         hwy_med = median(hwy),
+         hwy_sd = sd(hwy))
+```
+
+
+```{r}
+print(mpg_sum1)
+```
+
+
+### Grouping and summarizing
+
+A common operation in data prep is to group datasets by a variable and then summarize the variable.
+
+For instance, above we got summary statistics for all the full data set. What if we wanted it separately for 1999 and 2008?
+
+```{r}
+mpg_sum2 <- mpg %>% 
+  group_by(year) %>% 
+    summarize(hwy_mean = mean(hwy),
+           hwy_med = median(hwy),
+           hwy_sd = sd(hwy)) %>% 
+  ungroup()
+```
+
+
+```{r}
+print(mpg_sum2)
+```
+
+*Experimental feature using `.groups`*
+
+```{r}
+mpg_sum3 <- mpg %>% 
+  group_by(year) %>% 
+    summarize(hwy_mean = mean(hwy),
+           hwy_med = median(hwy),
+           hwy_sd = sd(hwy),
+           .groups = "drop") 
+```
+
+```{r}
+print(mpg_sum3)
+```
+
+
+## Merging dataframes
+
+The simplest task is to attach datadrames by columns or rows without paying any consideration for a common variable to match on. For this, R has two functions:
+
+### `rbind`
+
+If we want to put dataframes on top of each other, we can use `rbind()`
+
+For `rbind()` to work, the two dataframes should have:
+
+1. The same number of columns
+2. The same column names
+3. The same `class` of columns
+
+The easiest demo for this can be created by splitting an already existing dataframe.
+Let's separate out `mpg` by year and then merge the two resulting dataframes back
+
+```{r}
+mpg_1999 <- mpg %>%  filter(year == 1999)
+mpg_2008 <- mpg %>%  filter(year == 2008)
+```
+
+```{r}
+mpg_rows <- rbind(mpg_1999, mpg_2008)
+```
+
+```{r}
+summary(mpg_rows)
+```
+
+
+
+### `cbind`
+
+If you want to merge two dataframes sideways, you can use `cbind()`
+
+For it to work,
+
+1. The two dataframes should have the same number of rows.
+
+Now, let's first split `mpg` along the columns. First dataframe will have first 5 columns and the second dataframe will hold the remaining columns
+
+```{r}
+names(mpg)
+```
+
+
+```{r}
+
+mpg_left <- mpg %>% select(1:5)
+mpg_right <- mpg %>% select(-c(1:5))
+
+```
+
+
+
+```{r}
+mpg_cols <- cbind(mpg_left, mpg_right)
+```
+
+```{r}
+summary(mpg_cols)
+```
+
+
+### `*_join()` functions from `dplyr`
+
+Commonly, you need to merge datasets sideways by adding columns. However, there are two common issues:
+
+1. The two datasets may not have the same number of rows
+2. Even if the two datasets have the same number of rows, there is no guranatee that you are matching the rows correctly.
+
+
+Let's understand the second issue first.
+Sort `mpg_right` by `cty`
+
+```{r}
+mpg_right2 <- mpg_right %>% 
+  arrange(cty)
+
+```
+
+Now if you use `cbind()` on `mpg_left` and `mpg_right2` you won't get back the same original dataframe. This is because, we have mismatched the observations.
+
+How can we resolve this issue?
+
+```{r}
+
+```
+
+### Merge summary back to the original dataframe
+
+The common key helps even when we don't have the same number of observations in the two dataframes
+
+
+```{r}
+mpg2 <- mpg %>% 
+  inner_join(mpg_sum2, by = "year")
+```
+
+
+
+
+
+
+
+
+
+
