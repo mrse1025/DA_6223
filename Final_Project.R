@@ -6,6 +6,9 @@ Barcelona <- read.csv("Barcelona.csv")
 Milan <- read.csv("Milan.csv")
 Stockholm <- read.csv("Stockholm.csv")
 
+Combined <- Barcelona %>%
+  union(Milan)%>%
+  union(Stockholm)
 
 #Convert last review into date format
 Barcelona$last_review <- ymd(Barcelona$last_review)
@@ -27,9 +30,9 @@ Bac2020 <- Barcelona_Reviews %>%
 summary(Bac2020)
 
 ggplot (Bac2019, aes(x = last_review, y = price, color = room_type))+
-  geom_point() 
+  geom_line() 
 
 ggplot (Bac2020, aes(x = last_review, y = price, color = room_type))+
-  geom_point() 
+  geom_line() 
 
 
