@@ -1,0 +1,120 @@
+---
+title: "Homework 1"
+author: "Victoria Espinola"
+date: "`r sys.Date()"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(ggplot2)
+theme_set(theme_minimal())
+
+# Set your theme here
+# Create a duplicate copy of diamonds data here
+
+```
+
+
+
+In this homework, you will use `diamonds` data set from `ggplot2` package. It is automatically loaded when you execute `library(ggplot2)` so you don't have to separately load it. Please create a duplicate of `diamonds` and use that for homework. This will avoid corrupting the original data set.
+
+Make sure that you understand the variables in the data by checking the help file by executing `help(diamonds)` in the console. The data has five variables that measure the dimensions. 
+```{r}
+myset <- diamonds
+```
+
+## Instructions
+
+1. You are expected to recreate each plot **exactly** as shown in this homework.
+2. The objective of this homework is to help you develop fine grain control over `ggplot2`. As such, please refrain from exercising artistic freedom!
+3. All the plots use `theme_minimal()`. You can set this as your default theme by adding this line in the `setup` chunk **after** you load `ggplot2` library:
+`theme_set(theme_minimal())`
+
+
+## Q1 (3 points)
+
+Recreate the following graph. The parameter that controls transparency is set at 0.3. You need not get exactly the same colors but they must be **discrete** and should not follow a color gradient.
+
+
+```{r Q1}
+ggplot(myset, aes(carat, price, col=as.character(clarity)))+
+  geom_point(alpha=0.3, fill=NA)+
+   labs(x= "Diamond Carats", y= "Diamond Price", 
+            title= "Scatterplot of Diamond Prices")+
+  scale_y_continuous(labels = scales::dollar_format(prefix = "$"))
+  
+  
+
+```
+
+
+## Q2 (2 points)
+
+The previous graph looks cluttered. So you decided to use facets instead. Recreate the following graph:
+
+
+```{r Q2}
+ggplot(myset, aes(carat, price, col=as.character(clarity)))+
+  geom_point(alpha=0.3, fill=NA)+
+  facet_wrap(vars(clarity), 
+             nrow=2, 
+              ncol=4)+
+   labs(x= "Diamond Carats", y= "Diamond Price",
+            title= "Scatterplot of Diamond Prices")+
+  scale_y_continuous(labels = scales::dollar_format(prefix = "$"))+
+  theme(legend.title= element_blank(), legend.position = "none")
+
+```
+
+##Q3 (5 points)
+
+Next, you want to know whether the price of diamonds depends on table and depth. Note the line types. Recreate the following graphs:
+
+
+```{r Q3.1, message=FALSE}
+
+
+```
+
+
+```{r Q3.2, message=FALSE}
+
+```
+
+
+
+## Q4 (5 points)
+
+Recreate each of the following graphs for data exploration:
+
+
+```{r Q5.1, message=FALSE}
+
+```
+
+
+```{r Q5.2}
+
+```
+
+
+
+```{r Q5.3}
+
+
+```
+
+
+```{r Q5.4}
+
+```
+
+
+```{r Q5.5, message=FALSE}
+
+
+```
+
+
