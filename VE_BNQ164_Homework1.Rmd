@@ -39,8 +39,9 @@ Recreate the following graph. The parameter that controls transparency is set at
 
 
 ```{r Q1}
-ggplot(myset, aes(carat, price, col=as.character(clarity)))+
-  geom_point(alpha=0.3, fill=NA)+
+
+ggplot(myset, aes(carat, price, fill=as.factor(clarity)))+
+  geom_point(size=2, shape=21, alpha=0.3)+
    labs(x= "Diamond Carats", y= "Diamond Price", 
             title= "Scatterplot of Diamond Prices")+
   scale_y_continuous(labels = scales::dollar_format(prefix = "$"))
@@ -74,13 +75,22 @@ Next, you want to know whether the price of diamonds depends on table and depth.
 
 
 ```{r Q3.1, message=FALSE}
-
-
+ggplot(myset, aes(table, price)) +
+  stat_smooth(method="lm",se=TRUE, color="red", linetype="dashed")+
+  xlim(0, 100)
+  
+  
+   
+  
 ```
 
 
 ```{r Q3.2, message=FALSE}
-
+ggplot(myset, aes(depth, price)) +
+  stat_smooth(method="lm",se=TRUE, color="white", linetype="dotdash")+
+  xlim(0, 80)
+  
+   
 ```
 
 
@@ -91,29 +101,42 @@ Recreate each of the following graphs for data exploration:
 
 
 ```{r Q5.1, message=FALSE}
-
+ggplot(myset, aes(x*y*z, price,col=cut))+
+  geom_point()+
+  scale_color_manual(values=c("#99B898","#FECEAB", "#FF847C", "#E84A5F", "#2A363B"))
 ```
 
 
 ```{r Q5.2}
-
+ggplot(myset, aes(x=price))+
+  geom_histogram(bins=80,color="white")+
+  scale_x_continuous(labels = scales::dollar_format(prefix = "$"))
+  
 ```
 
 
 
 ```{r Q5.3}
-
+ggplot(myset, aes(x=clarity,fill=clarity))+
+  geom_bar(color="black")+
+  scale_fill_manual(values=c("#4287F5", "#42F5E3", "#AAF542", "#F2F542", "#F5C542","#F55742", "#F542EC", "#B042F5"))+
+  theme(legend.title= element_blank(), legend.position = "none")
 
 ```
 
 
 ```{r Q5.4}
-
+ggplot(myset, aes(x=cut, y=depth))+
+  geom_violin(color="blue")+
+  geom_jitter(color="red", alpha=.3)
+  
 ```
 
 
 ```{r Q5.5, message=FALSE}
-
+ggplot(myset, aes(x=x, y=price))+
+  geom_smooth(se=FALSE)+
+  geom_smooth(method="lm", color="green")
 
 ```
 
